@@ -1,0 +1,54 @@
+#!/bin/bash
+[ $# -lt 1 ] && echo "$0 (start|stop|restart|reload|status)"
+BASEDIR=`cd $(dirname $0);pwd`
+TELEGRAF="/usr/bin/telegraf"
+
+function start()
+{
+	[ -f $BASEDIR/telegraf.pid ] && echo "$BASEDIR/telegraf.pid exists!" && exit 1
+	$TELEGRAF -config $BASEDIR/reqstat.conf -pidfile $BASEDIR/telegraf.pid &>>$BASEDIR/telegraf.log &
+	status
+}
+
+function stop()
+{
+	kill -INT `cat $BASEDIR/telegraf.pid`
+	rm -f $BASEDIR/telegraf.pid
+}
+
+function status()
+{
+	if [ ! -f $BASEDIR/telegraf.pid ];then
+		echo "telegraf is not running"
+		exit 1
+	fi
+
+	pid=`ps aux |grep "telegraf" |grep "reqstat.conf" |grep -v "grep" |awk '{print $2}' |head -n 1`
+	fpid=`cat $BASEDIR/telegraf.pid`
+	if [ "$pid"x == "$fpid"x ];then
+		echo "telegraf is running($pid)"
+	else
+		echo "telegraf is dead but pid file exists"
+	fi
+}
+
+function restart()
+{
+	stop
+	start
+}
+
+function reload()
+{
+	kill -HUP `cat $BASEDIR/telegraf.pid`
+}
+
+case $1 in
+	start) start;;
+	stop) stop;;
+	restart) restart;;
+	reload) reload;;
+	status) status;;
+	*) exit 1;;
+esac
+

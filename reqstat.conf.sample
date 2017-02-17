@@ -1,0 +1,52 @@
+[agent]
+  interval = "10s"
+  round_interval = true
+  metric_batch_size = 1000
+  metric_buffer_limit = 10000
+  collection_jitter = "7s"
+  flush_interval = "10s"
+  flush_jitter = "5s"
+  precision = ""
+  debug = false
+  quiet = false
+  hostname = ""
+  omit_hostname = false
+###############################################################################
+#                            OUTPUT PLUGINS                                   #
+###############################################################################
+
+[[outputs.influxdb]]
+  urls = ["http://127.0.0.1:8086"]
+  database = "tengine"
+  retention_policy = "default"
+  write_consistency = "any"
+  timeout = "20s"
+  # username = "telegraf"
+  # password = "metricsmetricsmetricsmetrics"
+  ## Set the user agent for HTTP POSTs (can be useful for log differentiation)
+  # user_agent = "telegraf"
+  ## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)
+  # udp_payload = 512
+
+  ## Optional SSL Config
+  # ssl_ca = "/etc/telegraf/ca.pem"
+  # ssl_cert = "/etc/telegraf/cert.pem"
+  # ssl_key = "/etc/telegraf/key.pem"
+  ## Use SSL but skip chain & host verification
+  # insecure_skip_verify = false
+
+
+
+###############################################################################
+#                            INPUT PLUGINS                                    #
+###############################################################################
+
+[[inputs.exec]]
+  commands = ["/opt/telegraf/influx_tengine_reqstat.sh demo.list"]
+  timeout = "5s"
+  data_format = "influx"
+
+[[inputs.exec]]
+  commands = ["/opt/telegraf/influx_tengine_reqstat.sh test.list"]
+  timeout = "5s"
+  data_format = "influx"
